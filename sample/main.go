@@ -26,11 +26,11 @@ func main() {
 	// fallback decoder specified (unicode.UTF8).
 	decoder := xunicode.BOMOverride(xunicode.UTF8.NewDecoder())
 	asciiEncoder := runes.Map(asciiEncoderMapping)
-	graphicDecoder := runes.Map(graphicDecoderMapping)
+	graphicEncoder := runes.Map(graphicEncoderMapping)
 
 	// This is a bit of a strange writer. It replaces all unprintable
 	// output with unicode \ufffd characters.
-	graphicStdout := transform.NewWriter(os.Stdout, graphicDecoder)
+	graphicStdout := transform.NewWriter(os.Stdout, graphicEncoder)
 
 	for _, sample := range samples {
 		f := bytes.NewReader(sample)         // Wrap sample in a reader.
@@ -66,7 +66,7 @@ func asciiEncoderMapping(inrune rune) rune {
 	}
 }
 
-func graphicDecoderMapping(inrune rune) rune {
+func graphicEncoderMapping(inrune rune) rune {
 	if unicode.IsGraphic(inrune) || unicode.IsSpace(inrune) {
 		return inrune
 	} else {
