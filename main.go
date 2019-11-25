@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bufio"
+	// "bufio"
 	"fmt"
+	"io"
 	"os"
 
 	"golang.org/x/text/encoding/unicode"
@@ -18,15 +19,22 @@ func main() {
 	filename := os.Args[1]
 	decoder := unicode.BOMOverride(unicode.UTF8.NewDecoder())
 
-	f, err := os.Open(filename)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening file: %s\n", err)
-		os.Exit(2)
+	var f io.ReadCloser
+	var err error
+	if filename == "-" {
+		f = os.Stdin
+	} else {
+		f, err = os.Open(filename)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening file \"%s\": %s\n", filename, err)
+			os.Exit(2)
+		}
 	}
 	defer f.Close()
 
 	r := transform.NewReader(f, decoder)
 
+	/* *** DIAGNOSTIC OUTPUT
 	sc := bufio.NewScanner(r)
 	for sc.Scan() {
 		fmt.Println(sc.Bytes())
@@ -34,6 +42,13 @@ func main() {
 	}
 	if err = sc.Err(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %s\n", err)
+		os.Exit(3)
+	}
+	*/
+
+	// Write output as utf-8 without BOM to stdout
+	if _, err := io.Copy(os.Stdout, r); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(3)
 	}
 }
