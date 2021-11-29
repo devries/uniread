@@ -17,7 +17,6 @@ func main() {
 	}
 
 	filename := os.Args[1]
-	decoder := unicode.BOMOverride(unicode.UTF8.NewDecoder())
 
 	var f io.ReadCloser
 	var err error
@@ -32,7 +31,7 @@ func main() {
 	}
 	defer f.Close()
 
-	r := transform.NewReader(f, decoder)
+	r := ConvertUnicode(f)
 
 	/* *** DIAGNOSTIC OUTPUT
 	sc := bufio.NewScanner(r)
@@ -51,4 +50,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
 		os.Exit(3)
 	}
+	fmt.Println()
+}
+
+func ConvertUnicode(r io.Reader) io.Reader {
+	decoder := unicode.BOMOverride(unicode.UTF8.NewDecoder())
+
+	return transform.NewReader(r, decoder)
 }
